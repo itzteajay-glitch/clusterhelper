@@ -1,3 +1,0 @@
-[submodule "script-server"]
-	path = script-server
-	url = https://github.com/bugy/script-server.git
