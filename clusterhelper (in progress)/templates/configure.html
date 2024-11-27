@@ -1,0 +1,19 @@
+{% extends 'index.html' %}
+
+{% block title %}Configure Chart{% endblock %}
+
+{% block content %}
+    <h2>Configure Chart: {{ chart }}</h2>
+    <form method="POST">
+        <label for="namespace">Namespace:</label>
+        <input type="text" id="namespace" name="namespace" value="{{ namespace }}">
+        <br>
+        <label for="loadbalancer_ip">Loadbalancer IP (Optional):</label>
+        <input type="text" id="loadbalancer_ip" name="loadbalancer_ip" value="{{ ip }}">
+        <br>
+        <label for="push_to_git">Push to Git:</label>
+        <input type="checkbox" id="push_to_git" name="push_to_git">
+        <br>
+        <button type="submit">Submit</button>
+    </form>
+{% endblock %}

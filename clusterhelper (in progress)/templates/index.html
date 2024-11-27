@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Chart Search{% endblock %}
+
+{% block content %}
+    <h2>Search for a Chart</h2>
+    <form method="POST">
+        <label for="chart_name">Chart Name:</label>
+        <input type="text" id="chart_name" name="chart_name">
+        <br>
+        <label for="namespace">Namespace:</label>
+        <input type="text" id="namespace" name="namespace">
+        <br>
+        <label for="loadbalancer_ip">Loadbalancer IP (Optional):</label>
+        <input type="text" id="loadbalancer_ip" name="loadbalancer_ip">
+        <br>
+        <button type="submit">Search</button>
+    </form>
+    {% if error %}
+        <p>{{ error }}</p>
+    {% endif %}
+{% endblock %}
