@@ -1,91 +1,111 @@
 #!/bin/bash
 
 function log() {
-    echo "$(date +"%Y-%m-%d %H:%M:%S") - [${1:-INFO}] - ${2}" >> "script.log"
+    echo "$(date +"%Y-%m-%d %H:%M:%S") - [${1:-INFO}] - ${2}"
 }
 
 function verCheck() {
     echo "Checking if Clusterhelper is up to date."
-    repo_url=$(echo ${YOUR_TRUECHARTS_REPO} | cut -d '@' -f 2 | tr ':' '/' | cut -d '.' -f 1,2 )
-    repo_rul=$(echo https://${repo_url})
-    repo_response=$(curl -s -o /dev/null -w "%{http_code}" --head ${repo_url})
-    if [ ${repo_response} != "200" ]; then
-        echo "Repo is private"
+    remote_version=$(curl -s https://raw.githubusercontent.com/itzteajay-glitch/clusterhelper/refs/heads/main/clusterhelper/conf/stash/version.json | grep version)
+    local_version=$(cat /app/conf/stash/version.json | grep version)
+    if [ ${remote_version} == ${local_version} ]; then
+        log "INFO" "Clusterhelper up to date: ${local_version} == ${remote_version}"
         return 0
         else
-        echo "Repo is public. Cloning..."
-        return 1
+        log "WARN" "Clusterhelper out of date: ${local_version} != ${remote_version}"
+        while true;
+            read -p "It is recommended you pull the most recent docker image for this. Would you like to continue on this version? (y/n): " yn
+        
+        while true; do
+
+        log "INFO" "It is recommended you pull the most recent docker image for this."
+        read -p "Would you like to continue on this version? (y/n): " yn
+
+        case $yn in 
+            [yY] )
+            log "WARN" "version ignored"
+            return 0
+            break
+            ;;
+            [nN] )
+            log "INFO" "user aborted due to version out of date"
+            exit
+            ;;
+            * ) echo invalid response
+            ;;
+            esac
+        done
     fi
 }
 
-echo "Running Setup Check"
+log "INFO" "Running Setup Check"
 
 function repoMissing (){
-    echo "Checking for repo"
+    log "INFO" "Checking for repo"
     if [ -z "$( ls -A ${USER_MOUNT}/repo/ )" ]; then
-        echo "Repo not found..."
+        log "WARN" "Repo not found..."
         return 0
         else
-        echo "Repo found..."
+        log "INFO" "Repo found..."
         return 1 
     fi
 }
 
 function keyMissing (){
-    echo "Checking for keys"
+    log "INFO" "Checking for keys"
     if [ -z "$( ls -A ${USER_MOUNT}/keys/ )" ]; then
-        echo "ssh keys not found..."
+        log "WARN" "ssh keys not found..."
         return 0
         else
-        echo "ssh keys found..."
+        log "INFO" "ssh keys found..."
         return 1
     fi
 }
 
 function customScriptsMissing (){
-    echo "Checking for custom scripts"
+    log "INFO" "Checking for custom scripts"
     if [ -z "$( ls -A ${USER_MOUNT}/scripts/user-custom/ )" ]; then
-        echo "custom script example not found..."
+        log "WARN" "custom script example not found..."
         return 1
         else
-        echo "custom script example found..."
+        log "INFO" "custom script example found..."
         return 0
     fi
 }
 
 function customRunnersMissing (){
-    echo "Checking for custom runners"
+    log "INFO" "Checking for custom runners"
     if [ -z "$( ls -A ${USER_MOUNT}/runners/user-custom/ )" ]; then
-        echo "custom runner example found..."
+        log "WARN" "custom runner example found..."
         return 1
         else
-        echo "custom runner example found..."
+        log "INFO" "custom runner example found..."
         return 0
     fi
 }
 
 function repoPrivate () {
-    echo "Checking if provided repo is private"
+    log "INFO" "Checking if provided repo is private"
     repo_url=$(echo ${YOUR_TRUECHARTS_REPO} | cut -d '@' -f 2 | tr ':' '/' | cut -d '.' -f 1,2 )
     repo_rul=$(echo https://${repo_url})
     repo_response=$(curl -s -o /dev/null -w "%{http_code}" --head ${repo_url})
     if [ ${repo_response} != "200" ]; then
-        echo "Repo is private"
+        log "WARN" "Repo is private - ${repo_url} returned ${repo_response}"
         return 0
         else
-        echo "Repo is public. Cloning..."
+        log "INFO" "Repo is public. Cloning..."
         return 1
     fi
 }
 
 function genSshKey() {
-    echo "generating ssh key"
+    log "INFO" "generating ssh key"
     ssh-keygen -q -t ed25519 -N '' -f ~/.ssh/id_ed25519 <<<y
-    echo "please place your public key into github"
-    echo "https://github.com/settings/ssh/new"
+    log "INFO" "please place your public key into github"
+    log "INFO" "https://github.com/settings/ssh/new"
     cat ~/.ssh/id_ed25519.pub
     read -n 1 -s -r -p "Once your key is in github Press any key to continue..."
-    echo "storing ssh keys..."
+    log "INFO" "storing ssh keys..."
     cp ~/.ssh/id_* ${USER_MOUNT}/keys/
 }
 
@@ -101,13 +121,18 @@ function gitClone() {
     git clone ${YOUR_TRUECHARTS_REPO}
 }
 
+if verCheck
+then
+    log "INFO" "version check complete"
+fi
+
 if [[ ! customScriptsFound ]] || [[ ! customRunnersFound ]]
 then
     cp /app/conf/stash/example-script.sh /app/conf/scripts/user-custom/example-script.sh
     cp /app/conf/stash/example-script.json /app/conf/runners/user-custom/example-script.json
     if [[ customScriptsFound ]] && [[ customRunnersFound ]]
     then
-        echo "could not copy example script and runner"
+        log "ERROR" "could not copy example script and runner"
         exit 1
     fi
 fi
@@ -121,31 +146,23 @@ then
             genSshKey
             if keyMissing
             then
-                echo "ERROR: Key could not be generated or moved to proper location."
+                log "ERROR" "Key could not be generated or moved to proper location."
             else
                 gitClone
             fi
         else
-            echo "ssh key found for repo"
+            log "INFO" "ssh key found for repo"
             getClone
         fi
     else
-        echo "Repo is public"
+        log "INFO" "Repo is public"
         gitClone
     fi
 fi
 
-echo "Final evaluation"
+log "INFO" "Final evaluation"
 repoMissing
 repoPrivate
 keyMissing
 customScriptsMissing
 customRunnersMissing
-
-docker run -p 5000:5000  --name clusterhelper \
--v ~/clusterhelper/keys/:/app/conf/keys/ \
--v ~/clusterhelper/repo/:/app/conf/repo/ \
--v ~/clusterhelper/runners/:/app/conf/runners/user-custom/ \
--v ~/clusterhelper/scripts/:/app/conf/scripts/user-custom/ \
--v ~/clusterhelper/logs/:/app/logs \
-clusterhelper:latest
