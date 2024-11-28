@@ -12,7 +12,7 @@ Run the below command to run the docker container. Your personal truecharts repo
 
 ```docker run -p 5000:5000  --name clusterhelper \
 -v ~/clusterhelper/keys/:/app/conf/keys/ \
--v ~/clusterhelper/repo/:/app/conf/repo/ \
+-v /PATH/TO/YOUR/TRUECHARTS/REPO/:/app/conf/repo/ \
 -v ~/clusterhelper/runners/:/app/conf/runners/user-custom/ \
 -v ~/clusterhelper/scripts/:/app/conf/scripts/user-custom/ \
 -v ~/clusterhelper/logs/:/app/logs \

@@ -6,6 +6,7 @@ COPY ./conf/scripts/user-custom/ /app/conf/scripts/user-custom/
 COPY ./conf/runners/user-custom/ /app/conf/runners/user-custom/
 COPY ./conf/keys/ /app/conf/keys/
 COPY ./conf/repo/ /app/conf/repo/
+COPY ./conf/stash/ /app/conf/stash/
 
 # Set file permissions
 RUN chmod +x /app/conf/scripts/*.sh
