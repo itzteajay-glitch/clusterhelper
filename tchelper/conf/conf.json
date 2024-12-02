@@ -1,0 +1,12 @@
+{
+    "port": 5000,
+    "address": "0.0.0.0",
+    "title": "Clusterhelper",
+    "access": {
+      "admin_users": [ "*" ]
+    },
+    "logging": {
+      "execution_file": "$SCRIPT-$DATE-$ID.log",
+      "execution_date_format": "%y-%m-%d_%H-%M"
+    }
+  }

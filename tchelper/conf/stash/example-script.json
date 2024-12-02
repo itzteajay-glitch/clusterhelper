@@ -1,0 +1,14 @@
+{
+    "name": "example script",
+    "script_path": "conf/scripts/user-custom/example-script.sh",
+    "parameters": [
+      {
+        "name": "Name",
+        "same_arg_param": true,
+        "type": "text",
+        "default": "Peepee",
+        "constant": false,
+        "env_var": "NAME"
+      }
+    ]
+}  
